@@ -2,6 +2,7 @@
 using APICatalog.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace APICatalog.Controllers
 {
@@ -27,7 +28,7 @@ namespace APICatalog.Controllers
             return products;
         }
 
-        [HttpGet("{id:int}", Name= "ObterProduto")]
+        [HttpGet("{id:int}", Name = "ObterProduto")]
         public ActionResult<Product> Get(int id)
         {
             var product = _context.Products.SingleOrDefault(p => p.ProductId == id);
@@ -49,7 +50,21 @@ namespace APICatalog.Controllers
             _context.Products.Add(product);
             _context.SaveChanges();
             return new CreatedAtRouteResult("ObterProduto",
-                new {id = product.ProductId}, product);
+                new { id = product.ProductId }, product);
+        }
+
+        [HttpPut("{id}:int")]
+        public ActionResult Put(int id, Product product)
+        {
+            if (id != product.ProductId)
+            {
+                return BadRequest();
+            }
+
+            _context.Entry(product).State = EntityState.Modified;
+            _context.SaveChanges();
+
+            return Ok(product);
         }
     }
 }
