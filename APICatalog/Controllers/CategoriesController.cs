@@ -20,13 +20,14 @@ namespace APICatalog.Controllers
         [HttpGet("produtos")]
         public ActionResult<IEnumerable<Category>> GetCategoriesProducts()
         {
-            return _context.Categories.Include(p => p.Products).ToList();
+            //return _context.Categories.Include(p => p.Products).AsNoTracking().ToList();
+            return _context.Categories.Include(p => p.Products).Where(c => c.CategoryId <= 5).ToList();
         }
 
         [HttpGet]
         public ActionResult<IEnumerable<Category>> Get()
         {
-            return _context.Categories.ToList();
+            return _context.Categories.AsNoTracking().ToList(); 
         }
 
         [HttpGet("{id:int}", Name = "ObterCategoria")]
