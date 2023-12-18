@@ -31,7 +31,7 @@ namespace APICatalog.Controllers
         [HttpGet("{id:int}", Name = "ObterProduto")]
         public ActionResult<Product> Get(int id)
         {
-            var product = _context.Products.SingleOrDefault(p => p.ProductId == id);
+            var product = _context.Products.FirstOrDefault(p => p.ProductId == id);
             if (product is null)
             {
                 return NotFound("Produto não encontrado");
