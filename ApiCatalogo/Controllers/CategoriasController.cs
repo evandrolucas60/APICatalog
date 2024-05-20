@@ -1,10 +1,6 @@
-﻿using ApiCatalogo.Context;
-using ApiCatalogo.Filters;
-using ApiCatalogo.Models;
+﻿using ApiCatalogo.Models;
 using ApiCatalogo.Repositories;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace ApiCatalogo.Controllers;
 
@@ -53,7 +49,8 @@ public class CategoriasController : ControllerBase
         var categoriaCriada = _repository.Create(categoria);
 
 
-        return new CreatedAtRouteResult("ObterCategoria", new { id = categoriaCriada.CategoriaId }, categoriaCriada);
+        return new CreatedAtRouteResult("ObterCategoria", 
+            new { id = categoriaCriada.CategoriaId }, categoriaCriada);
     }
 
     [HttpPut("{id:int}")]
