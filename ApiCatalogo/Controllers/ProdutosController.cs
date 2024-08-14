@@ -2,6 +2,7 @@
 using ApiCatalogo.Models;
 using ApiCatalogo.Repositories;
 using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ApiCatalogo.Controllers;
@@ -20,7 +21,7 @@ public class ProdutosController : ControllerBase
     }
 
     [HttpGet("produtos/{id}")]
-    public ActionResult <IEnumerable<ProdutoDTO>> GetProdutosPorCategoria(int id)
+    public ActionResult<IEnumerable<ProdutoDTO>> GetProdutosPorCategoria(int id)
     {
         var produtos = _uof.ProdutoRepository.GetProdutosPorCategoria(id);
         if (produtos is null)
@@ -29,7 +30,7 @@ public class ProdutosController : ControllerBase
         }
 
         //var destino = _mapper.map<Destino>(origem);
-        var produtosDto = _mapper.Map<IEnumerable <ProdutoDTO>>(produtos);
+        var produtosDto = _mapper.Map<IEnumerable<ProdutoDTO>>(produtos);
 
         return Ok(produtosDto);
     }
@@ -37,7 +38,7 @@ public class ProdutosController : ControllerBase
     [HttpGet]
     public ActionResult<IEnumerable<ProdutoDTO>> Get()
     {
-        var produtos =  _uof.ProdutoRepository.GetAll();
+        var produtos = _uof.ProdutoRepository.GetAll();
         if (produtos is null)
         {
             return NotFound();
@@ -76,6 +77,32 @@ public class ProdutosController : ControllerBase
 
         return new CreatedAtRouteResult("ObterProduto",
             new { id = novoProdutoDto.ProdutoId }, novoProdutoDto);
+    }
+
+    [HttpPatch("{id}/UpdatePartial")]
+    public ActionResult<ProdutoDTOUpdateResponse> Patch(int id, JsonPatchDocument<ProdutoDTOUpdateRequest> patchProdutoDTO)
+    {
+        if (patchProdutoDTO is null || id <= 0)
+            return BadRequest();
+
+        var produto = _uof.ProdutoRepository.Get(c => c.ProdutoId == id);
+
+        if (produto is null)
+            return NotFound();
+
+        var produtoUpdateRequest = _mapper.Map<ProdutoDTOUpdateRequest>(produto);
+
+        patchProdutoDTO.ApplyTo(produtoUpdateRequest, ModelState);
+
+        if (!ModelState.IsValid || TryValidateModel(produtoUpdateRequest))
+            return BadRequest();
+
+        _mapper.Map(produtoUpdateRequest, produto);
+
+        _uof.ProdutoRepository.Update(produto);
+        _uof.Commit();
+
+        return Ok(_mapper.Map<ProdutoDTOUpdateResponse>(produto));
     }
 
     [HttpPut("{id:int}")]
