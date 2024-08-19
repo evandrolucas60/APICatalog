@@ -28,8 +28,13 @@ namespace ApiCatalogo.Repositories
                 categorias = categorias.Where(c => c.Nome.IndexOf(nomeFiltro, StringComparison.OrdinalIgnoreCase) >= 0);
             }
 
-            var categoriasFiltradas = PagedList<Categoria>.ToPagedList(categorias.AsQueryable(),
-                                       categoriasFiltroParams.PageNumber, categoriasFiltroParams.PageSize);
+            var categoriasFiltradas =
+                PagedList<Categoria>.ToPagedList
+                (
+                    categorias.AsQueryable(),
+                    categoriasFiltroParams.PageNumber,
+                    categoriasFiltroParams.PageSize
+                );
 
             return categoriasFiltradas;
 
