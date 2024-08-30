@@ -41,7 +41,15 @@ namespace ApiCatalogo.Services
 
         public string GenerateRefreshToken()
         {
-            throw new NotImplementedException();
+            var secureRandomBytes = new byte[128];   
+
+            using var randomNumberGenerator = RandomNumberGenerator.Create();
+
+            randomNumberGenerator.GetBytes(secureRandomBytes);
+
+            var refreshToken = Convert.ToBase64String(secureRandomBytes);
+
+            return refreshToken;
         }
 
         public ClaimsPrincipal GetPrincipalFromExpiredToken(string token, IConfiguration _config)
