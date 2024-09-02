@@ -63,12 +63,12 @@ public class AuthController : ControllerBase
 
             return Ok(new
             {
-                Token =new JwtSecurityTokenHandler().WriteToken(token),
+                Token = new JwtSecurityTokenHandler().WriteToken(token),
                 RefreshToken = refreshToken,
                 Expiration = token.ValidTo,
             });
         }
-         return Unauthorized();
+        return Unauthorized();
     }
 
     [HttpPost]
@@ -91,12 +91,59 @@ public class AuthController : ControllerBase
 
         var result = await _userManager.CreateAsync(user, model.Password!);
 
-        if (!result.Succeeded) 
+        if (!result.Succeeded)
         {
             return StatusCode(StatusCodes.Status500InternalServerError,
                 new Response { Status = "Error", Message = "User creation failed." });
         }
 
         return Ok(new Response { Status = "Success", Message = "User created successfully" });
+    }
+
+    [HttpPost]
+    [Route("refresh-token")]
+    public async Task<IActionResult> RefreshToken(TokenModel tokenModel)
+    {
+        if (tokenModel == null)
+        {
+            return BadRequest("Invalid client request");
+        }
+
+        string? accessToken = tokenModel.AcessToken
+                              ?? throw new ArgumentException(nameof(tokenModel));
+
+        string? refreshToken = tokenModel.RefreshToken
+                               ?? throw new ArgumentException(nameof(tokenModel));
+
+        var principal = _tokenService.GetPrincipalFromExpiredToken(accessToken!, _configuration);
+
+        if (principal == null)
+        {
+            return BadRequest("Invalid access token/refresh token");
+        }
+
+        string userName = principal.Identity.Name;
+
+        var user = await _userManager.FindByNameAsync(userName!);
+
+        if (user == null
+            || user.RefreshToken != refreshToken
+            || user.RefreshTokenExpiryTime <= DateTime.Now)
+        {
+            return BadRequest("Invalid access token/refresh token");
+        }
+
+        var newAcesseToken = _tokenService.GenerateAccessToken(principal.Claims.ToList(), _configuration);
+        var newRefreshToken = _tokenService.GenerateRefreshToken();
+
+        user.RefreshToken = newRefreshToken;
+
+        await _userManager.UpdateAsync(user);
+
+        return new ObjectResult(new
+        {
+            accessToken = new JwtSecurityTokenHandler().WriteToken(newAcesseToken),
+            refreshToken = newRefreshToken
+        });
     }
 }
