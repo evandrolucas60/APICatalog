@@ -12,6 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ApiCatalogo.Models;
 using ApiCatalogo.Services;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,14 +28,43 @@ builder.Services.AddControllers(options =>
 
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "apicatalogo", Version = "v1" });
+
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Bearer JWT",
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] { }
+        }
+    });
+});
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
 builder.Services.AddAuthorization();
-builder.Services.AddAuthentication("Bearer").AddJwtBearer();
+//builder.Services.AddAuthentication("Bearer").AddJwtBearer();
 
 string mySqlConnection = builder.Configuration
                                 .GetConnectionString("DefaultConnection");
@@ -43,7 +73,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
                     options.UseMySql(mySqlConnection,
                     ServerVersion.AutoDetect(mySqlConnection)));
 
-var secretKey = builder.Configuration["JWT:SecretKey"] 
+var secretKey = builder.Configuration["JWT:SecretKey"]
                     ?? throw new ArgumentException("Invalid secret key");
 
 builder.Services.AddAuthentication(options =>
@@ -63,7 +93,7 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.Zero,
         ValidAudience = builder.Configuration["JWT:ValidAudience"],
         ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
-        IssuerSigningKey = new SymmetricSecurityKey (
+        IssuerSigningKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(secretKey))
     };
 });
