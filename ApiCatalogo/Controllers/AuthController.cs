@@ -31,6 +31,7 @@ public class AuthController : ControllerBase
 
     [HttpPost]
     [Route("CreateRole")]
+    [Authorize(Policy = "SuperAdminOnly")]
     public async Task<IActionResult> CreateRole(string roleName)
     {
         var roleExists = await _roleManager.RoleExistsAsync(roleName);
@@ -69,6 +70,7 @@ public class AuthController : ControllerBase
 
     [HttpPost]
     [Route("AddUserToRole")]
+    [Authorize(Policy = "SuperAdminOnly")]
     public async Task<IActionResult> AddUserToRole(string email, string roleName)
     {
         var user = await _userManager.FindByEmailAsync(email);
@@ -225,9 +227,9 @@ public class AuthController : ControllerBase
         });
     }
 
-    [Authorize]
     [HttpPost]
     [Route("revoke/{username}")]
+    [Authorize(Policy = "ExclusivePolicyOnly")]
     public async Task<IActionResult> Revoke(string username)
     {
         var user = await _userManager.FindByNameAsync(username);
