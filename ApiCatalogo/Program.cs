@@ -63,9 +63,6 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
-builder.Services.AddAuthorization();
-//builder.Services.AddAuthentication("Bearer").AddJwtBearer();
-
 string mySqlConnection = builder.Configuration
                                 .GetConnectionString("DefaultConnection");
 
@@ -96,6 +93,21 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(secretKey))
     };
+});
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("SuperAdminOnly", policy =>
+            policy.RequireRole("Admin").RequireClaim("id", "evandro"));
+
+    options.AddPolicy("UserOnly", policy => policy.RequireRole("User"));
+
+    options.AddPolicy("ExclusivePolicyOnly", policy =>
+    {
+        policy.RequireAssertion(context => 
+        context.User.HasClaim(claim => claim.Type == "id" && claim.Value == "evandro") 
+        || context.User.IsInRole("SuperAdmin"));
+    });
 });
 
 builder.Services.AddScoped<ApiLoggingFilter>();
