@@ -79,15 +79,17 @@ public class AuthController : ControllerBase
             if (result.Succeeded)
             {
                 _logger.LogInformation(1, $"user {user.Email} added to the {roleName} role");
+
+                return StatusCode(StatusCodes.Status200OK,
                 new Response 
                 { 
                     Status = "Success", 
                     Message = $"User {user.Email} added to the {roleName} role" 
-                };
+                });
             }
             else
             {
-                _logger.LogInformation(2, $"Error: Unable to add user {user.Email} to the {roleName} role");
+                _logger.LogInformation(1, $"Error: Unable to add user {user.Email} to the {roleName} role");
 
                 return StatusCode(StatusCodes.Status400BadRequest,
                     new Response
