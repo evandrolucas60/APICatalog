@@ -68,6 +68,40 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost]
+    [Route("AddUserToRole")]
+    public async Task<IActionResult> AddUserToRole(string email, string roleName)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+
+        if (user != null)
+        {
+            var result = await _userManager.AddToRoleAsync(user, roleName);
+            if (result.Succeeded)
+            {
+                _logger.LogInformation(1, $"user {user.Email} added to the {roleName} role");
+                new Response 
+                { 
+                    Status = "Success", 
+                    Message = $"User {user.Email} added to the {roleName} role" 
+                };
+            }
+            else
+            {
+                _logger.LogInformation(2, $"Error: Unable to add user {user.Email} to the {roleName} role");
+
+                return StatusCode(StatusCodes.Status400BadRequest,
+                    new Response
+                    {
+                        Status = "Error",
+                        Message = $"Error: Unable to add user {user.Email} to the {roleName} role"
+                    });
+            }
+        }
+
+        return BadRequest(new { error = "Unable to finde user"});
+    }
+
+    [HttpPost]
     [Route("login")]
     public async Task<IActionResult> Login([FromBody] LoginModel model)
     {
