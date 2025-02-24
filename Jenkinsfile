@@ -16,11 +16,12 @@ pipeline {
         stage('Setup .NET') {
             steps {
                 script {
-                    def dotnetInstalled = sh(script: 'dotnet --version || echo "not installed"', returnStdout: true).trim()
-                    if (dotnetInstalled == "not installed") {
-                        sh 'wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh'
-                        sh 'chmod +x dotnet-install.sh'
-                        sh './dotnet-install.sh --channel 8.0'
+                    def dotnetInstalled = bat(script: 'dotnet --version', returnStdout: true).trim()
+                    if (dotnetInstalled.contains("'dotnet' is not recognized")) {
+                        bat 'curl -o dotnet-install.ps1 https://dot.net/v1/dotnet-install.ps1'
+                        bat 'powershell -ExecutionPolicy Bypass -File dotnet-install.ps1 -Channel ${DOTNET_VERSION}'
+                        env.PATH = "C:\\Users\\${env.USERNAME}\\.dotnet;${env.PATH}"
+                        env.DOTNET_ROOT = "C:\\Users\\${env.USERNAME}\\.dotnet"
                     }
                 }
             }
@@ -28,33 +29,50 @@ pipeline {
 
         stage('Restore Dependencies') {
             steps {
-                sh 'dotnet restore'
+                bat 'dotnet restore'
             }
         }
 
         stage('Build') {
             steps {
-                sh 'dotnet build --configuration Release --no-restore'
+                bat 'dotnet build --configuration Release --no-restore'
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'dotnet test --configuration Release --no-build --logger trx'
+                bat 'dotnet test --configuration Release --no-build --logger "trx;LogFileName=test_results.trx" --collect:"XPlat Code Coverage"'
+                archiveArtifacts artifacts: '**\\TestResults\\test_results.trx', fingerprint: true
             }
         }
 
         stage('Publish') {
             steps {
-                sh 'dotnet publish -c Release -o ${BUILD_DIR}'
-                archiveArtifacts artifacts: "${BUILD_DIR}/**", fingerprint: true
+                bat 'dotnet publish -c Release -o ${BUILD_DIR} --self-contained false'
+                archiveArtifacts artifacts: "${BUILD_DIR}\\**", fingerprint: true
             }
         }
 
         stage('Deploy') {
             steps {
-                echo "Implementar lógica de deploy aqui (ex: cópia para servidor, Docker, Kubernetes, etc.)"
+                script {
+                    def serverUser = 'usuario'
+                    def serverIP = 'seu.servidor.com'
+                    def remotePath = 'C:\\deploy\\app'
+
+                    // Exemplo de cópia para um servidor remoto usando PSCP (PuTTY Secure Copy)
+                    bat "pscp -r ${BUILD_DIR} ${serverUser}@${serverIP}:${remotePath}"
+                }
             }
+        }
+    }
+
+    post {
+        failure {
+            echo "🚨 Falha no pipeline Jenkins para ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}"
+        }
+        success {
+            echo "✅ Sucesso no pipeline Jenkins para ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}"
         }
     }
 }
