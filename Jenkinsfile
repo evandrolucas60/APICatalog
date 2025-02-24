@@ -1,5 +1,10 @@
-node("built-in") {
-    stage("Cloning ApiCatalog Project") {
-        git url: 'https://github.com/evandrolucas60/APICatalog.git'
+pipeline {
+    agent any
+    stages {
+        stage("Cloning ApiCatalog Project") {
+            steps {
+                git url: 'https://github.com/evandrolucas60/APICatalog.git'
+            }
+        }
     }
 }
