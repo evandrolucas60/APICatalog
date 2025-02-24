@@ -1,33 +1,35 @@
 pipeline {
     agent any
+    environment {
+        SONARQUBE = 'SonarQube'  // Nome do servidor SonarQube configurado no Jenkins
+        SONAR_LOGIN = credentials('squ_7c507bb55b0b0a88cd18ba04ba3ec9175ae649c2')  // Token do SonarQube armazenado no Jenkins
+    }
     stages {
         stage("Cloning ApiCatalog Project") {
             steps {
                 git url: 'https://github.com/evandrolucas60/APICatalog.git', branch: 'main'
             }
         }
-        stage("Restore Dependencies") {
+        stage("Build and Restore Dependencies") {
             steps {
-                // Restaurar as dependências do projeto .NET
                 bat 'dotnet restore'
-            }
-        }
-        stage("Build") {
-            steps {
-                // Construir o projeto .NET
                 bat 'dotnet build --configuration Release'
             }
         }
-        stage("Test") {
+        
+       stage("Code Quality - Analyze with SonarQube") {
             steps {
-                // Rodar os testes do projeto .NET
-                bat 'dotnet test --configuration Release'
-            }
+                script {
+                    // Inicia a análise do SonarQube
+                    bat "dotnet sonarscanner begin /k:\"project-key\" /d:sonar.login=\"${SONAR_LOGIN}\""
+                    bat 'dotnet build'
+                    bat "dotnet sonarscanner end /d:sonar.login=\"${SONAR_LOGIN}\""
+                }
+            }  // Fechando corretamente o bloco 'steps'
         }
-        stage("Publish") {
+        stage("Run Tests") {
             steps {
-                // Publicar o projeto para produção (criar artefatos para deploy)
-                bat 'dotnet publish --configuration Release --output ./publish'
+                bat 'dotnet test --configuration Release'
             }
         }
     }
