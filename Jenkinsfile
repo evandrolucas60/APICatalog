@@ -9,6 +9,7 @@ pipeline {
                 git url: 'https://github.com/evandrolucas60/APICatalog.git', branch: 'main'
             }
         }
+        
         stage("Build and Restore Dependencies") {
             steps {
                 bat 'dotnet restore'
@@ -18,15 +19,21 @@ pipeline {
         
         stage("Code Quality - Analyze with SonarQube") {
             environment {
-                scannerHome = tool 'SonarQubeScanner';
+                scannerHome = tool 'SonarQubeScanner'
             }
             steps {
                 withSonarQubeEnv(credentialsId: 'sonarqubeToken', installationName: 'SonarQube') {
-                    bat "${scannerHome}/bin/sonar-scanner"
+                    bat """
+                        ${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.projectKey=ApiCatalog \
+                            -Dsonar.projectName=ApiCatalog \
+                            -Dsonar.projectVersion=1.0 \
+                            -Dsonar.sources=.
+                    """
                 }
             }
         }
-
+        
         stage("Run Tests") {
             steps {
                 bat 'dotnet test --configuration Release'
