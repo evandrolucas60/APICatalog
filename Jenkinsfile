@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    tools {
+        jdk 'JAVA21LTS' // Nome do JDK configurado no Jenkins
+    }
     stages {
         stage("Cloning ApiCatalog Project") {
             steps {
