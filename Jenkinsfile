@@ -13,17 +13,17 @@ pipeline {
             }
         }
         
-       stage("Code Quality - Analyze with SonarQube") {
+        stage("Code Quality - Analyze with SonarQube") {
             environment {
                 scannerHome = tool 'SonarQubeScanner';
             }
             steps {
-              withSonarQubeEnv(credentialsId: 'sonarqubeToken', installationName: 'SonarQube') {
-                bat "${scannerHome}/bin/sonar-scanner"
-              }
+                withSonarQubeEnv(credentialsId: 'sonarqubeToken', installationName: 'SonarQube') {
+                    bat "${scannerHome}/bin/sonar-scanner"
+                }
             }
         }
-        }
+
         stage("Run Tests") {
             steps {
                 bat 'dotnet test --configuration Release'
