@@ -52,27 +52,6 @@ pipeline {
                 archiveArtifacts artifacts: "${BUILD_DIR}\\**", fingerprint: true
             }
         }
-
-        stage('Deploy') {
-            steps {
-                script {
-                    def serverUser = 'usuario'
-                    def serverIP = 'seu.servidor.com'
-                    def remotePath = 'C:\\deploy\\app'
-
-                    // Exemplo de cópia para um servidor remoto usando PSCP (PuTTY Secure Copy)
-                    bat "pscp -r ${BUILD_DIR} ${serverUser}@${serverIP}:${remotePath}"
-                }
-            }
-        }
-    }
-
-    post {
-        failure {
-            echo "🚨 Falha no pipeline Jenkins para ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}"
-        }
-        success {
-            echo "✅ Sucesso no pipeline Jenkins para ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}"
-        }
+     
     }
 }
