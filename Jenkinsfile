@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         SONARQUBE = 'SonarQube'  // Nome do servidor SonarQube configurado no Jenkins
-        SONAR_LOGIN = credentials('squ_7c507bb55b0b0a88cd18ba04ba3ec9175ae649c2')  // Token do SonarQube armazenado no Jenkins
+        SONAR_LOGIN = credentials('sonarqubeToken')  // Token do SonarQube armazenado no Jenkins
     }
     stages {
         stage("Cloning ApiCatalog Project") {
