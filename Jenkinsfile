@@ -1,9 +1,5 @@
 pipeline {
     agent any
-    environment {
-        SONARQUBE = 'SonarQube'  // Nome do servidor SonarQube configurado no Jenkins
-        SONAR_LOGIN = credentials('sonarqubeToken')  // Token do SonarQube armazenado no Jenkins
-    }
     stages {
         stage("Cloning ApiCatalog Project") {
             steps {
@@ -18,14 +14,15 @@ pipeline {
         }
         
        stage("Code Quality - Analyze with SonarQube") {
+            environment {
+                scannerHome = tool 'SonarQubeScanner';
+            }
             steps {
-                script {
-                    // Inicia a análise do SonarQube
-                    bat "dotnet sonarscanner begin /k:\"project-key\" /d:sonar.login=\"${SONAR_LOGIN}\""
-                    bat 'dotnet build'
-                    bat "dotnet sonarscanner end /d:sonar.login=\"${SONAR_LOGIN}\""
-                }
-            }  // Fechando corretamente o bloco 'steps'
+              withSonarQubeEnv(credentialsId: 'sonarqubeToken', installationName: 'SonarQube') {
+                bat "${scannerHome}/bin/sonar-scanner"
+              }
+            }
+        }
         }
         stage("Run Tests") {
             steps {
