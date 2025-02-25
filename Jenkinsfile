@@ -25,8 +25,8 @@ pipeline {
                 withSonarQubeEnv(credentialsId: 'sonarqubeToken', installationName: 'SonarQube') {
                     bat """
                         ${scannerHome}/bin/sonar-scanner \
-                            -Dsonar.projectKey=ApiCatalog \
-                            -Dsonar.projectName=ApiCatalog \
+                            -Dsonar.projectKey=APICatalog \
+                            -Dsonar.projectName=APICatalog \
                             -Dsonar.projectVersion=1.0 \
                             -Dsonar.sources=.
                     """
