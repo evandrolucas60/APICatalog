@@ -23,8 +23,7 @@ pipeline {
                     def scannerHome = tool 'SonarScanner for .NET'
                     withSonarQubeEnv() {
                         // Execute the SonarScanner begin command with the correct source directory
-                        bat "dotnet ${scannerHome}\\SonarScanner.MSBuild.dll begin /k:\"evandrolucas60_APICatalog_d53fc9b9-89b8-4ea7-944e-ae66c349b1a2\" /d:sonar.sources=\"ApiCatalogo\" /d:sonar.exclusions=\"**/appsettings.Development.json\""
-
+                        bat "dotnet ${scannerHome}\\SonarScanner.MSBuild.dll begin /k:\"evandrolucas60_APICatalog_d53fc9b9-89b8-4ea7-944e-ae66c349b1a2\" /d:sonar.sources=\"ApiCatalogo\" /d:sonar.exclusions=\"**/appsettings.Development.json, **/appsettings.json\""
                         
                         // Execute the build command for the correct .csproj
                         bat "dotnet build ApiCatalogo/ApiCatalogo.csproj --configuration Release"
