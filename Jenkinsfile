@@ -17,21 +17,14 @@ pipeline {
             }
         }
         
-        stage("Code Quality - Analyze with SonarQube") {
-            environment {
-                scannerHome = tool 'SonarQubeScanner'
-            }
-            steps {
-                withSonarQubeEnv(credentialsId: 'sonarqubeToken', installationName: 'SonarQube') {
-                    bat """
-                        ${scannerHome}/bin/sonar-scanner \
-                            -Dsonar.projectKey=APICatalog \
-                            -Dsonar.projectName=APICatalog \
-                            -Dsonar.projectVersion=1.0 \
-                            -Dsonar.sources=.
-                    """
-                }
-            }
+        stage('SonarQube Analysis') {
+    def scannerHome = tool 'SonarScanner for .NET'
+    withSonarQubeEnv() {
+      bat "dotnet ${scannerHome}\\SonarScanner.MSBuild.dll begin /k:\"evandrolucas60_APICatalog_d53fc9b9-89b8-4ea7-944e-ae66c349b1a2\""
+      bat "dotnet build"
+      bat "dotnet ${scannerHome}\\SonarScanner.MSBuild.dll end"
+    }
+  }
         }
         
         stage("Run Tests") {
