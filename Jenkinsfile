@@ -36,10 +36,14 @@ pipeline {
        stage("Security Testing") {
             steps {
                 script {
-                    def dependencyCheckHome = tool 'DependencyCheck'
-                    bat "${dependencyCheckHome}\\dependency-check.bat --scan . --format HTML --out dependency-check-report"
+                    // Caminho fixo para o script do Dependency Check
+                    def depCheckPath = 'C:\\ProgramData\\Jenkins\\.jenkins\\tools\\org.jenkinsci.plugins.DependencyCheck.tools.DependencyCheckInstallation\\DependencyCheck\\dependency-check.bat'
+
+                    // Executar o Dependency Check
+                    bat "\"${depCheckPath}\" --scan . --format HTML --out dependency-check-report"
                 }
-                publishHTML([
+
+                publishHTML([ 
                     allowMissing: false, 
                     alwaysLinkToLastBuild: false, 
                     keepAll: false, 
