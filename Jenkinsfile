@@ -36,15 +36,9 @@ pipeline {
        stage("Security Testing") {
             steps {
                 script {
-                    dependencyCheckAnalyzer(
-                        scanPath: '.', 
-                        outdir: 'dependency-check-report', 
-                        suppressionFile: '', 
-                        failOnError: false, 
-                        isAutoupdateDisabled: false
-                    )
+                    def dependencyCheckHome = tool 'DependencyCheck'
+                    bat "${dependencyCheckHome}\\dependency-check.bat --scan . --format HTML --out dependency-check-report"
                 }
-
                 publishHTML([
                     allowMissing: false, 
                     alwaysLinkToLastBuild: false, 
