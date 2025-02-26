@@ -33,31 +33,27 @@ pipeline {
                 }
             }
         }
-        stages {
-            stage('Security Testing') {
-                steps {
-                    script {
-                        // Executa a análise de segurança com OWASP Dependency-Check
-                        dependencyCheckAnalyzer(
-                            scanPath: '.', 
-                            outdir: 'dependency-check-report', 
-                            suppressionFile: '', 
-                            failOnError: false, 
-                            isAutoupdateDisabled: false
-                        )
-                    }
-
-                    // Publica o relatório HTML no Jenkins
-                    publishHTML([
-                        allowMissing: false, 
-                        alwaysLinkToLastBuild: false, 
-                        keepAll: false, 
-                        reportDir: 'dependency-check-report', 
-                        reportFiles: 'dependency-check-report.html', 
-                        reportName: 'Dependency Check Report', 
-                        reportTitles: ''
-                    ])
+       stage("Security Testing") {
+            steps {
+                script {
+                    dependencyCheckAnalyzer(
+                        scanPath: '.', 
+                        outdir: 'dependency-check-report', 
+                        suppressionFile: '', 
+                        failOnError: false, 
+                        isAutoupdateDisabled: false
+                    )
                 }
+
+                publishHTML([
+                    allowMissing: false, 
+                    alwaysLinkToLastBuild: false, 
+                    keepAll: false, 
+                    reportDir: 'dependency-check-report', 
+                    reportFiles: 'dependency-check-report.html', 
+                    reportName: 'Dependency Check Report', 
+                    reportTitles: ''
+                ])
             }
         }
         stage("Run Tests") {
