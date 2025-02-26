@@ -16,8 +16,7 @@ pipeline {
                 bat 'dotnet build --configuration Release'
             }
         }
-        
-        stage("SonarQube Analysis") {
+        stage("Code Quality") {
             steps {
                 script {
                     def scannerHome = tool 'SonarScanner for .NET'
@@ -34,7 +33,27 @@ pipeline {
                 }
             }
         }
-        
+        stage('Security Testing') {
+            steps {
+                dependencyCheckAnalyzer(
+                    scanPath: '.', 
+                    outdir: 'dependency-check-report', 
+                    suppressionFile: '', 
+                    failOnError: false, 
+                    isAutoupdateDisabled: false
+                )
+
+                publishHTML([
+                    allowMissing: false, 
+                    alwaysLinkToLastBuild: false, 
+                    keepAll: false, 
+                    reportDir: 'dependency-check-report', 
+                    reportFiles: 'dependency-check-report.html', 
+                    reportName: 'Dependency Check Report', 
+                    reportTitles: ''
+                ])
+            }
+        }
         stage("Run Tests") {
             steps {
                 bat 'dotnet test --configuration Release'
